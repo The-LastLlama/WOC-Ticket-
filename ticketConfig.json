@@ -1,0 +1,66 @@
+{
+  "guilds": {
+    "1466655158476996702": {
+      "panelChannel": "1466655369479848217",
+      "reasons": [
+        {
+          "id": "12",
+          "label": "Testing New Shit",
+          "description": "new shit",
+          "question": "How do u wanna react?",
+          "staffRoles": [
+            "1466656536259461180"
+          ],
+          "openCategory": "1466655159399616707",
+          "closeCategory": "1466655159399616708",
+          "transcriptChannel": "1466655159399616709",
+          "panelChannel": "1466655159399616709"
+        },
+        {
+          "id": "aaaaaaaaaaaa",
+          "label": "diditwork",
+          "description": "ddddd",
+          "question": "diddy",
+          "staffRoles": [
+            "1466656536259461180"
+          ],
+          "openCategory": "1466655159399616707",
+          "closeCategory": "1466655159399616707",
+          "transcriptChannel": "1466655159399616709",
+          "panelChannel": "1466655369479848217"
+        }
+      ]
+    },
+    "1349029832364916778": {
+      "panelChannel": "1465133490520588479",
+      "reasons": [
+        {
+          "id": "Partnership Application Under Testing",
+          "label": "Test Application",
+          "description": "Test Application",
+          "question": "Why do u want to be a partner?",
+          "staffRoles": [
+            "1466218954694332672"
+          ],
+          "openCategory": "1411411249476141210",
+          "closeCategory": "1411411249476141210",
+          "transcriptChannel": "1465133490520588479",
+          "panelChannel": "1465133490520588479"
+        },
+        {
+          "id": "2",
+          "label": "Tested Newwww",
+          "description": "neww",
+          "question": "neww",
+          "staffRoles": [
+            "1466218954694332672"
+          ],
+          "openCategory": "1411411249476141210",
+          "closeCategory": "1411411249476141210",
+          "transcriptChannel": "1465133490520588479",
+          "panelChannel": "1465133490520588479"
+        }
+      ]
+    }
+  }
+}
