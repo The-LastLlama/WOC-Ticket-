@@ -1,4 +1,5 @@
 const { MessageEmbed } = require("discord.js");
+const Ticket = require("../../models/Ticket");
 
 module.exports = {
     name: "escalate",
@@ -26,11 +27,12 @@ module.exports = {
         const reason = interaction.options.getString("reason") || "No reason provided";
 
         const channel = interaction.channel;
+        const ticket = await Ticket.findOne({ channelId: channel.id });
 
-        // ❌ Must be a ticket channel (basic check)
-        if (!channel.parentId) {
+        // ❌ Must be a ticket channel
+        if (!ticket) {
             return interaction.reply({
-                content: "❌ This command can only be used inside a ticket channel.",
+                content: "❌ This command can only be used inside a ticket channel (checked via DB).",
                 ephemeral: true
             });
         }

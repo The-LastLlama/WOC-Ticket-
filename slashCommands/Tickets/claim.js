@@ -1,4 +1,5 @@
-const { loadTickets, saveTickets } = require("../../utils/ticketStore");
+const Ticket = require("../../models/Ticket");
+const { MessageActionRow, MessageButton } = require("discord.js");
 
 module.exports = {
     name: "claim",
@@ -18,14 +19,11 @@ module.exports = {
     run: async (client, interaction, args) => {
         const channel = interaction.options.getChannel("channel");
 
-        // Ensure it's a text channel
         if (channel.type !== "GUILD_TEXT") {
             return interaction.reply({ content: "❌ Please select a valid text channel.", ephemeral: true });
         }
 
-        // Load opened tickets
-        const tickets = loadTickets();
-        const ticket = tickets[channel.id];
+        const ticket = await Ticket.findOne({ channelId: channel.id });
 
         if (!ticket) {
             return interaction.reply({ content: "❌ This channel is not recognized as a ticket.", ephemeral: true });
@@ -35,26 +33,28 @@ module.exports = {
             return interaction.reply({ content: `❌ This ticket has already been claimed by <@${ticket.claimerId}>.`, ephemeral: true });
         }
 
-        // Save claimer to JSON
         ticket.claimerId = interaction.user.id;
-        saveTickets(tickets);
+        await ticket.save();
 
         // Enable the close button if it exists
         if (channel.messages) {
             const messages = await channel.messages.fetch({ limit: 10 });
-            const lastMsg = messages.find(m => m.components.length);
+            const lastMsg = messages.find(m => m.components.length && m.author.id === client.user.id);
 
             if (lastMsg) {
-                const row = lastMsg.components[0];
-                const claimBtn = row.components.find(c => c.customId === "ticket-claim");
-                const closeBtn = row.components.find(c => c.customId === "ticket-close");
+                const row = new MessageActionRow().addComponents(
+                    new MessageButton()
+                        .setCustomId("ticket-claimed")
+                        .setLabel(`Claimed by ${interaction.user.username}`)
+                        .setStyle("SECONDARY")
+                        .setDisabled(true),
+                    new MessageButton()
+                        .setCustomId("ticket-close")
+                        .setLabel("Close Ticket")
+                        .setStyle("DANGER")
+                );
 
-                if (claimBtn && closeBtn) {
-                    claimBtn.setDisabled(true);
-                    closeBtn.setDisabled(false);
-
-                    await lastMsg.edit({ components: [row] });
-                }
+                await lastMsg.edit({ components: [row] });
             }
         }
 
