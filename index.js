@@ -1,5 +1,10 @@
 const { Client, Collection, Intents } = require('discord.js');
 const handler = require("./handler/index");
+const mongoose = require("mongoose");
+const Discord = require('discord.js');
+
+// Call .env file to get Token
+require('dotenv').config()
 
 const client = new Client({
     intents: [
@@ -20,11 +25,6 @@ const client = new Client({
     ],
 });
 
-const Discord = require('discord.js');
-
-// Call .env file to get Token
-require('dotenv').config()
-
 module.exports = client;
 
 // Global Variables
@@ -33,13 +33,20 @@ client.commands = new Collection();
 client.slash = new Collection();
 client.config = require('./config')
 
+// === DATABASE CONNECTION ===
+mongoose.connect(process.env.MONGO_URI)
+.then(() => {
+    console.log("✅ Connected to MongoDB");
+}).catch(err => {
+    console.error("❌ MongoDB Connection Error:", err);
+});
+
 // Records commands and events
 handler.loadEvents(client);
 handler.loadCommands(client);
 handler.loadSlashCommands(client);
 
 // Error Handling
-
 process.on("uncaughtException", (err) => {
     console.log("Uncaught Exception: " + err);
 });

@@ -1,3 +1,5 @@
+const Ticket = require("../../models/Ticket");
+
 module.exports = {
     name: "add",
     description: "Add user to ticket!",
@@ -14,13 +16,14 @@ module.exports = {
     ],
     run: async (client, interaction, args) => {
         const user = interaction.options.getUser("user");
+        const ticket = await Ticket.findOne({ channelId: interaction.channel.id });
 
-        if (!interaction.channel.name.includes("ticket") && !interaction.channel.name.includes("close")) {
-            return interaction.reply({ content: "❌ This command can only be used on tickets!", ephemeral: true });
+        if (!ticket) {
+            return interaction.reply({ content: "❌ This command can only be used on tickets in the database!", ephemeral: true });
         }
 
         // Optional: Only claimer or staff can add
-        if (interaction.channel.claimerId && interaction.user.id !== interaction.channel.claimerId) {
+        if (ticket.claimerId && interaction.user.id !== ticket.claimerId) {
             return interaction.reply({ content: "❌ Only the staff member who claimed this ticket can add users.", ephemeral: true });
         }
 

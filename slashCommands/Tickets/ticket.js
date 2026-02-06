@@ -1,7 +1,5 @@
-// commands/ticket.js
-const fs = require("fs");
 const { MessageActionRow, MessageSelectMenu, MessageEmbed } = require("discord.js");
-const { loadConfig, saveConfig } = require("../../utils/ticketConfig");
+const GuildConfig = require("../../models/GuildConfig");
 
 module.exports = {
     name: "ticket",
@@ -20,8 +18,8 @@ module.exports = {
                         { name: "reason", description: "Ticket reason ID", type: 3, required: true },
                         { name: "label", description: "Panel Title", type: 3, required: true },
                         { name: "description", description: "Embed Description", type: 3, required: true },
-
-                        // ✅ NEW QUESTION FIELD
+                        
+                      
                         {
                             name: "question",
                             description: "Question asked to the user when opening the ticket",
@@ -29,13 +27,7 @@ module.exports = {
                             required: true
                         },
 
-                        {
-                            name: "staff_roles",
-                            description: "Mention one or more staff roles",
-                            type: 3,
-                            required: true
-                        },
-
+                        { name: "staff_roles", description: "Mention one or more staff roles", type: 3, required: true },
                         { name: "open_category", description: "Open ticket category", type: 7, required: true, channel_types: [4] },
                         { name: "close_category", description: "Close ticket category", type: 7, required: true, channel_types: [4] },
                         { name: "transcript", description: "Transcript channel", type: 7, required: true },
@@ -51,7 +43,7 @@ module.exports = {
         const reasonId = interaction.options.getString("reason");
         const label = interaction.options.getString("label");
         const description = interaction.options.getString("description");
-        const question = interaction.options.getString("question"); // ✅ NEW
+        const question = interaction.options.getString("question");
         const rolesInput = interaction.options.getString("staff_roles");
 
         const openCategory = interaction.options.getChannel("open_category");
@@ -60,7 +52,6 @@ module.exports = {
         const panelChannel = interaction.options.getChannel("panel_channel");
         const guildId = interaction.guild.id;
 
-        // 🔍 Extract role IDs from mentions
         const staffRoles = [...rolesInput.matchAll(/<@&(\d+)>/g)].map(r => r[1]);
 
         if (!staffRoles.length) {
@@ -70,26 +61,27 @@ module.exports = {
             });
         }
 
-        const data = loadConfig();
-        if (!data.guilds[guildId]) {
-            data.guilds[guildId] = { panelChannel: panelChannel.id, reasons: [] };
+        // DB SETUP
+        let data = await GuildConfig.findOne({ guildId });
+        if (!data) {
+            data = new GuildConfig({ guildId, panelChannel: panelChannel.id, reasons: [] });
         } else {
-            data.guilds[guildId].panelChannel = panelChannel.id;
+            data.panelChannel = panelChannel.id;
         }
 
-        if (data.guilds[guildId].reasons.some(r => r.id === reasonId)) {
+        if (data.reasons.some(r => r.id === reasonId)) {
             return interaction.reply({
                 content: "❌ That reason ID already exists.",
                 ephemeral: true
             });
         }
 
-        // ✅ SAVE UPDATED REASON
-        data.guilds[guildId].reasons.push({
+        // SAVE UPDATED REASON TO MONGO
+        data.reasons.push({
             id: reasonId,
             label,
             description,
-            question, // ✅ STORED
+            question, 
             staffRoles,
             openCategory: openCategory.id,
             closeCategory: closeCategory.id,
@@ -97,10 +89,10 @@ module.exports = {
             panelChannel: panelChannel.id
         });
 
-        saveConfig(data);
+        await data.save();
 
-        // 🔽 Build dropdown safely
-        const options = data.guilds[guildId].reasons.map(r => ({
+        // Build dropdown
+        const options = data.reasons.map(r => ({
             label: r.label || "No Label",
             description: (r.description || "No description").slice(0, 100),
             value: r.id
@@ -134,7 +126,7 @@ module.exports = {
         }
 
         interaction.reply({
-            content: "✅ Ticket reason added with custom question!",
+            content: "✅ Ticket reason added with custom question to DB!",
             ephemeral: true
         });
     }
